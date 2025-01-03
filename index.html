@@ -13,11 +13,12 @@
             background-color: #0F0F0F;
 
             user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            -o-user-select: none;
             overflow: hidden;
+        }
+
+        @keyframes rotate {
+            0% { rotate: -3deg; }
+            100% { rotate: 3deg; }
         }
 
         #card-container {
@@ -29,10 +30,17 @@
             height: 40%;
             aspect-ratio: 1/1.4;
 
-            transition: scale 0.2s linear;
+            transition: scale 0.2s linear, rotate 0.2s linear;
+
+            animation-name: rotate;
+            animation-duration: 5s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
         }
         
         #card-container:hover {
+            /* animation-play-state: paused; */
             scale: 1.1;
         }
 
@@ -86,36 +94,31 @@
     <script>
         let card = document.querySelector("#card-container");
 
-        document.body.addEventListener("mousemove", (e) => {
-            if(e.target.id == "card-container") {
-                var x = (innerWidth / 2 - e.pageX) / -10;
-                var y = (innerHeight / 2 - e.pageY) / 10;
-            } else {
-                var x = (innerWidth / 2 - e.pageX) / -15;
-                var y = (innerHeight / 2 - e.pageY) / 15;
-            }
+        card.addEventListener("mousemove", (e) => {
+            var x = (innerWidth / 2 - e.pageX) / -15;
+            var y = (innerHeight / 2 - e.pageY) / 15;
             var mouseX = e.pageX;
             var mouseY = e.pageY;
             card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
         });
 
-        document.body.addEventListener("mouseenter", (e) => {
+        card.addEventListener("mouseenter", (e) => {
             card.style.transition = "transform 0.2s linear, scale 0.2s linear"
             setTimeout(function(){ card.style.transition = "scale 0.2s linear" }, 200);
         })
-
-        document.body.addEventListener("mouseleave", (e) => {
+        
+        card.addEventListener("mouseleave", (e) => {
             card.style.transition = "transform 0.2s linear, scale 0.2s linear"
             card.style.transform = "rotateY(0deg) rotateX(0deg)";
             setTimeout(function(){ card.style.transition = "scale 0.2s linear" }, 200);
         });
-
+        
         document.getElementById('option-cards').onchange = function() {
             document.getElementById('option-basic').disabled = !this.checked;
             document.getElementById('option-basic').checked = false;
-
+            
         };
-
+        
         document.getElementById('option-jokers').onchange = function() {
             document.getElementById('option-special').disabled = !this.checked;
             document.getElementById('option-special').checked = false;
