@@ -30,18 +30,23 @@
             height: 40%;
             aspect-ratio: 1/1.4;
 
-            transition: scale 0.2s linear, rotate 0.2s linear;
-
+            transition: scale 0.2s ease;
+        }
+        
+        body:has(#option-float:checked) > #card-container {
             animation-name: rotate;
             animation-duration: 5s;
             animation-timing-function: ease-in-out;
             animation-iteration-count: infinite;
             animation-direction: alternate;
         }
-        
+
         #card-container:hover {
-            /* animation-play-state: paused; */
             scale: 1.1;
+        }
+        
+        body:has(#option-pause:checked) > #card-container:hover {
+            animation-play-state: paused;
         }
 
         #card-container iframe {
@@ -57,25 +62,25 @@
 
         #edit-menu {
             position: absolute;
-            width: 12em;
+            width: 14em;
             height: auto;
-            right: -14em;
+            right: -16em;
             padding: 1em;
             
             top: 50%;
             transform: translateY(-50%);
-            transition: right 0.1s ease;
+            transition: right 0.2s ease, border 0.5s ease;
             
             background-color: #000000;
-            border: solid 1px #fff;
+            border: solid 1px #333;
             border-radius: 15px;
             
             color: #fff;
             font-family: sans-serif;
-            font-size: 0.8em;
         }
-
+        
         #edit-menu:hover {
+            border: solid 1px #fff;
             right: 0em;
         }
     </style>
@@ -86,19 +91,25 @@
         <iframe src="https://kiwuthegamer.github.io/Balatro-Card-API/?cards=1&basicOnly=1"></iframe>
     </div>
     <div id="edit-menu">
+        Display Options
+        <div> <input type="checkbox" id="option-float" checked="true"><label for="option-float">Float effect</label> </div>
+        <div> <input type="checkbox" id="option-pause"><label for="option-pause">Pause float effect on hover</label> </div>
+        <div> <input type="checkbox" id="option-rotate" checked="true"><label for="option-rotate">3D Rotation on hover</label> </div>
+        <br>
+        Card Filters
         <div> <input type="checkbox" id="option-cards" checked="true" onclick="refresh()"><label for="option-cards">Playing cards</label> </div>
         <div> <input type="checkbox" id="option-basic" onclick="refresh()"><label for="option-basic">Modified playing cards</label> </div>
         <div> <input type="checkbox" id="option-jokers" onclick="refresh()"><label for="option-jokers">Jokers</label> </div>
-        <div> <input type="checkbox" id="option-special" disabled onclick="refresh()"><label for="option-special">Special case jokers</label> </div>
+        <div> <input type="checkbox" id="option-special" disabled onclick="refresh()"><label for="option-special">Special shaped jokers (may break display)</label> </div>
     </div>
     <script>
         let card = document.querySelector("#card-container");
 
         card.addEventListener("mousemove", (e) => {
+            if(!document.getElementById('option-rotate').checked) { return }
+
             var x = (innerWidth / 2 - e.pageX) / -15;
             var y = (innerHeight / 2 - e.pageY) / 15;
-            var mouseX = e.pageX;
-            var mouseY = e.pageY;
             card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
         });
 
@@ -122,6 +133,11 @@
         document.getElementById('option-jokers').onchange = function() {
             document.getElementById('option-special').disabled = !this.checked;
             document.getElementById('option-special').checked = false;
+        };
+        
+        document.getElementById('option-float').onchange = function() {
+            document.getElementById('option-pause').disabled = !this.checked;
+            document.getElementById('option-pause').checked = false;
         };
 
         let refreshing = 0
