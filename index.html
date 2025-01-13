@@ -15,6 +15,10 @@
             user-select: none;
             overflow: hidden;
         }
+        
+        body:has(#option-bg:checked) > #animatedBG {
+            visibility: visible;
+        }
 
         #animatedBG {
             position: absolute;
@@ -26,6 +30,33 @@
             object-fit: cover;
             pointer-events: none;
             z-index: -1;
+            visibility: hidden;
+        }
+        
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 10px; }
+        }
+
+
+        body:has(#option-scanlines:checked) > #scanlines {
+            visibility: visible;
+        }
+        
+        #scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99;
+            pointer-events: none;
+
+            visibility: hidden;
+            filter: contrast(0.5) opacity(0.05) sepia(1) hue-rotate(180deg);
+            background: linear-gradient(green, yellow, red, black);
+            background-size: 100% 10px;
+            animation: scanlines 2s linear infinite;
         }
 
         @keyframes rotate {
@@ -73,11 +104,13 @@
         }
 
         #edit-menu {
+            --width: 15em;
+            --padding: 1em;
             position: absolute;
-            width: 14em;
+            width: var(--width);
             height: auto;
-            right: -16em;
-            padding: 1em;
+            right: calc(-1*var(--width) + -2*var(--padding));
+            padding: var(--padding);
             
             top: 50%;
             transform: translateY(-50%);
@@ -99,12 +132,19 @@
     <title>Card Display</title>
 </head>
 <body>
+    <div id="scanlines"></div>
     <div id="card-container" onclick="refresh()">
         <iframe src="https://kiwuthegamer.github.io/Balatro-Card-API/?cards=1&basicOnly=1"></iframe>
     </div>
     <div id="edit-menu">
+        Background Options
+        <div> <input type="checkbox" id="option-bg" checked="true"><label for="option-bg">Animated background</label> </div>
+        <div> <input type="range" id="option-bghue" value="0" min="0" max="360"><label for="option-bghue">Background hue shift</label> </div>
+        <br>
+        <div> <input type="checkbox" id="option-scanlines"><label for="option-scanlines">Show scan lines</label> </div>
+        <div> <input type="range" id="option-scanlinespeed" value="1" min="0" max="10" step="0.5" disabled><label for="option-scanlinespeed">Scan line speed</label> </div>
+        <br>
         Display Options
-        <div> <input type="checkbox" id="option-bg" checked="true"><label for="option-bg">Animated Background</label> </div>
         <div> <input type="checkbox" id="option-float" checked="true"><label for="option-float">Float effect</label> </div>
         <div> <input type="checkbox" id="option-pause"><label for="option-pause">Pause float effect on hover</label> </div>
         <div> <input type="checkbox" id="option-rotate" checked="true"><label for="option-rotate">3D Rotation on hover</label> </div>
@@ -158,7 +198,26 @@
         };
 
         document.getElementById('option-bg').onchange = function() {
-            document.getElementById('animatedBG').style.visibility = this.checked ? 'visible' : 'hidden';
+            document.getElementById('option-bghue').disabled = !this.checked;
+        };
+
+        document.getElementById('option-scanlines').onchange = function() {
+            document.getElementById('option-scanlinespeed').disabled = !this.checked;
+        };
+        
+        document.getElementById('option-bghue').oninput = function() {
+            document.getElementById('animatedBG').style.filter = "hue-rotate(" + this.value + "deg)";
+        };
+
+        // document.getElementById('option-bg').checked = false;
+        document.getElementById('option-scanlines').checked = true;
+        
+        document.getElementById('option-scanlinespeed').oninput = function() {
+            if(this.value == 0) {
+                document.getElementById('scanlines').style.animationDuration = "0s";
+            } else {
+                document.getElementById('scanlines').style.animationDuration = 1 / this.value + "s";
+            }
         };
 
         let refreshing = 0
