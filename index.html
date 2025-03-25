@@ -1,249 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-
-            perspective: 500px;
-            background-color: #0F0F0F;
-
-            user-select: none;
-            overflow: hidden;
-        }
-        
-        body:has(#option-bg:checked) > #animatedBG {
-            visibility: visible;
-        }
-
-        #animatedBG {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-
-            object-fit: cover;
-            pointer-events: none;
-            z-index: -1;
-            visibility: hidden;
-        }
-        
-        @keyframes scanlines {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 10px; }
-        }
-
-
-        body:has(#option-scanlines:checked) > #scanlines {
-            visibility: visible;
-        }
-        
-        #scanlines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 99;
-            pointer-events: none;
-
-            visibility: hidden;
-            filter: contrast(0.5) opacity(0.05) sepia(1) hue-rotate(180deg);
-            background: linear-gradient(green, yellow, red, black);
-            background-size: 100% 10px;
-            animation: scanlines 2s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { rotate: -3deg; }
-            100% { rotate: 3deg; }
-        }
-
-        #card-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            translate: -50% -50%;
-            
-            height: 40%;
-            aspect-ratio: 1/1.4;
-
-            transition: scale 0.2s ease;
-        }
-        
-        body:has(#option-float:checked) > #card-container {
-            animation-name: rotate;
-            animation-duration: 5s;
-            animation-timing-function: ease-in-out;
-            animation-iteration-count: infinite;
-            animation-direction: alternate;
-        }
-
-        #card-container:hover {
-            scale: 1.1;
-        }
-        
-        body:has(#option-pause:checked) > #card-container:hover {
-            animation-play-state: paused;
-        }
-
-        #card-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 10px;
-            pointer-events: none;
-        }
-
-        #edit-menu {
-            --width: 15em;
-            --padding: 1em;
-            position: absolute;
-            width: var(--width);
-            height: auto;
-            right: calc(-1*var(--width) + -2*var(--padding));
-            padding: var(--padding);
-            
-            top: 50%;
-            transform: translateY(-50%);
-            transition: right 0.2s ease, border 0.5s ease;
-            
-            background-color: #000000;
-            border: solid 1px #333;
-            border-radius: 15px;
-            
-            color: #fff;
-            font-family: sans-serif;
-        }
-        
-        #edit-menu:hover {
-            border: solid 1px #fff;
-            right: 0em;
-        }
-    </style>
-    <title>Card Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Display</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      perspective: 500px;
+      background-color: #0F0F0F;
+      user-select: none;
+      overflow: hidden;
+    }
+    
+    /* The shader background canvas fills the screen and sits behind everything */
+    #animatedBG {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      display: block;
+    }
+    
+    body:has(#option-scanlines:checked) > #scanlines {
+      visibility: visible;
+    }
+    
+    #scanlines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 99;
+      pointer-events: none;
+      visibility: hidden;
+      filter: contrast(0.5) opacity(0.05) sepia(1) hue-rotate(180deg);
+      background: linear-gradient(green, yellow, red, black);
+      background-size: 100% 10px;
+      animation: scanlines 2s linear infinite;
+    }
+    
+    @keyframes scanlines {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 10px; }
+    }
+    
+    @keyframes rotate {
+      0% { rotate: -3deg; }
+      100% { rotate: 3deg; }
+    }
+    
+    #card-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transform-origin: top left;
+      height: 40%;
+      aspect-ratio: 1/1.4;
+      transition: scale 0.2s ease;
+    }
+    
+    body:has(#option-float:checked) > #card-container {
+      animation-name: rotate;
+      animation-duration: 5s;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    
+    #card-container:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    
+    body:has(#option-pause:checked) > #card-container:hover {
+      animation-play-state: paused;
+    }
+    
+    #card-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+    
+    #edit-menu {
+      --width: 15em;
+      --padding: 1em;
+      position: absolute;
+      width: var(--width);
+      height: auto;
+      right: calc(-1*var(--width) + -2*var(--padding));
+      padding: var(--padding);
+      top: 50%;
+      transform: translateY(-50%);
+      transition: right 0.2s ease, border 0.5s ease;
+      background-color: #000000;
+      border: solid 1px #333;
+      border-radius: 15px;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    
+    #edit-menu:hover {
+      border: solid 1px #fff;
+      right: 0em;
+    }
+    
+    .color-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5em;
+    }
+    
+    .color-option input[type="color"] {
+      margin-right: 0.5em;
+      border: none;
+      outline: none;
+    }
+    
+    .color-option button {
+      font-size: 0.8em;
+      padding: 0.2em 0.5em;
+      margin: 0 0.5em;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
 </head>
 <body>
-    <div id="scanlines"></div>
-    <div id="card-container" onclick="refresh()">
-        <iframe src="https://kiwuthegamer.github.io/Balatro-Card-API/?cards=1&basicOnly=1"></iframe>
+  <!-- Background Canvas for Shader Rendering -->
+  <canvas id="animatedBG"></canvas>
+  
+  <div id="scanlines"></div>
+  
+  <!-- Card Container -->
+  <div id="card-container" onclick="refresh()">
+    <iframe src="https://kiwuthegamer.github.io/Balatro-Card-API/?cards=1&basicOnly=1"></iframe>
+  </div>
+  
+  <!-- Edit Menu -->
+  <div id="edit-menu">
+    Background Options
+    <div> 
+      <input type="checkbox" id="option-bg" checked="true">
+      <label for="option-bg">Animated background</label> 
     </div>
-    <div id="edit-menu">
-        Background Options
-        <div> <input type="checkbox" id="option-bg" checked="true"><label for="option-bg">Animated background</label> </div>
-        <div> <input type="range" id="option-bghue" value="0" min="0" max="360"><label for="option-bghue">Background hue shift</label> </div>
-        <br>
-        <div> <input type="checkbox" id="option-scanlines"><label for="option-scanlines">Show scan lines</label> </div>
-        <div> <input type="range" id="option-scanlinespeed" value="1" min="0" max="10" step="0.5" disabled><label for="option-scanlinespeed">Scan line speed</label> </div>
-        <br>
-        Display Options
-        <div> <input type="checkbox" id="option-float" checked="true"><label for="option-float">Float effect</label> </div>
-        <div> <input type="checkbox" id="option-pause"><label for="option-pause">Pause float effect on hover</label> </div>
-        <div> <input type="checkbox" id="option-rotate" checked="true"><label for="option-rotate">3D Rotation on hover</label> </div>
-        <br>
-        Card Filters
-        <div> <input type="checkbox" id="option-cards" checked="true" onclick="refresh()"><label for="option-cards">Playing cards</label> </div>
-        <div> <input type="checkbox" id="option-basic" onclick="refresh()"><label for="option-basic">Modified playing cards</label> </div>
-        <div> <input type="checkbox" id="option-jokers" onclick="refresh()"><label for="option-jokers">Jokers</label> </div>
-        <div> <input type="checkbox" id="option-special" disabled onclick="refresh()"><label for="option-special">Special shaped jokers (may break display)</label> </div>
+    <!-- Replaced the hue shift slider with three colour pickers and revert buttons -->
+    <div class="color-option">
+      <input type="color" id="color-picker1" value="#de443b">
+      <label for="color-picker1">Colour 1</label>
+      <button id="revert1">Revert</button>
     </div>
-    <video autoplay muted loop id="animatedBG">
-        <source src="animatedBG.webm" type="video/webm" />
-        <source src="animatedBG.mp4" type="video/webm" />
-    </video>
-    <script>
-        let card = document.querySelector("#card-container");
+    <div class="color-option">
+      <input type="color" id="color-picker2" value="#006bb4">
+      <label for="color-picker2">Colour 2</label>
+      <button id="revert2">Revert</button>
+    </div>
+    <div class="color-option">
+      <input type="color" id="color-picker3" value="#152325">
+      <label for="color-picker3">Colour 3</label>
+      <button id="revert3">Revert</button>
+    </div>
+    <br>
+    <div> 
+      <input type="checkbox" id="option-scanlines">
+      <label for="option-scanlines">Show scan lines</label> 
+    </div>
+    <div> 
+      <input type="range" id="option-scanlinespeed" value="1" min="0" max="10" step="0.5" disabled>
+      <label for="option-scanlinespeed">Scan line speed</label> 
+    </div>
+    <br>
+    Display Options
+    <div> 
+      <input type="checkbox" id="option-float" checked="true">
+      <label for="option-float">Float effect</label> 
+    </div>
+    <div> 
+      <input type="checkbox" id="option-pause">
+      <label for="option-pause">Pause float effect on hover</label> 
+    </div>
+    <div> 
+      <input type="checkbox" id="option-rotate" checked="true">
+      <label for="option-rotate">3D Rotation on hover</label> 
+    </div>
+    <!-- New slider for rotation perspective -->
+    <div>
+      <input type="range" id="option-perspective" value="15" min="5" max="50" step="1">
+      <label for="option-perspective">Rotation perspective</label>
+    </div>
+    <br>
+    Card Filters
+    <div> 
+      <input type="checkbox" id="option-cards" checked="true" onclick="refresh()">
+      <label for="option-cards">Playing cards</label> 
+    </div>
+    <div> 
+      <input type="checkbox" id="option-basic" onclick="refresh()">
+      <label for="option-basic">Modified playing cards</label> 
+    </div>
+    <div> 
+      <input type="checkbox" id="option-jokers" onclick="refresh()">
+      <label for="option-jokers">Jokers</label> 
+    </div>
+    <div> 
+      <input type="checkbox" id="option-special" disabled onclick="refresh()">
+      <label for="option-special">Special shaped jokers (may break display)</label> 
+    </div>
+  </div>
+  
+  <script>
+    // Default colour values
+    const defaultColors = {
+      color1: "#de443b",
+      color2: "#006bb4",
+      color3: "#152325"
+    };
 
-        card.addEventListener("mousemove", (e) => {
-            if(!document.getElementById('option-rotate').checked) { return }
-
-            var x = (innerWidth / 2 - e.pageX) / -15;
-            var y = (innerHeight / 2 - e.pageY) / 15;
-            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
-        });
-
-        card.addEventListener("mouseenter", (e) => {
-            card.style.transition = "transform 0.2s linear, scale 0.2s linear"
-            setTimeout(function(){ card.style.transition = "scale 0.2s linear" }, 200);
-        })
-        
-        card.addEventListener("mouseleave", (e) => {
-            card.style.transition = "transform 0.2s linear, scale 0.2s linear"
-            card.style.transform = "rotateY(0deg) rotateX(0deg)";
-            setTimeout(function(){ card.style.transition = "scale 0.2s linear" }, 200);
-        });
-        
-        document.getElementById('option-cards').onchange = function() {
-            document.getElementById('option-basic').disabled = !this.checked;
-            document.getElementById('option-basic').checked = false;
-            
-        };
-        
-        document.getElementById('option-jokers').onchange = function() {
-            document.getElementById('option-special').disabled = !this.checked;
-            document.getElementById('option-special').checked = false;
-        };
-        
-        document.getElementById('option-float').onchange = function() {
-            document.getElementById('option-pause').disabled = !this.checked;
-            document.getElementById('option-pause').checked = false;
-        };
-
-        document.getElementById('option-bg').onchange = function() {
-            document.getElementById('option-bghue').disabled = !this.checked;
-        };
-
-        document.getElementById('option-scanlines').onchange = function() {
-            document.getElementById('option-scanlinespeed').disabled = !this.checked;
-        };
-        
-        document.getElementById('option-bghue').oninput = function() {
-            document.getElementById('animatedBG').style.filter = "hue-rotate(" + this.value + "deg)";
-        };
-        
-        document.getElementById('option-scanlinespeed').oninput = function() {
-            if(this.value == 0) {
-                document.getElementById('scanlines').style.animationDuration = "0s";
-            } else {
-                document.getElementById('scanlines').style.animationDuration = 1 / this.value + "s";
-            }
-        };
-
-        let refreshing = 0
-        function refresh(){
-            if (refreshing == 1) { return }
-
-            refreshing = 1
-
-            var iframe1 = document.querySelector('#card-container > iframe');
-            var iframe2 = document.createElement('iframe');
-
-            iframe1.style.opacity = 0.5;
-            
-            option_cards = document.querySelector("#option-cards").checked+0;
-            option_basic = document.querySelector("#option-basic").checked+0;
-            option_jokers = document.querySelector("#option-jokers").checked+0;
-            option_special = document.querySelector("#option-special").checked+0;
-
-            iframe2.src = "https://kiwuthegamer.github.io/Balatro-Card-API/?cards=" + option_cards + "&basicOnly=" + (1-option_basic) + "&jokers=" + option_jokers + "&specialCases=" + option_special;
-
-            iframe2.style.visibility = 'hidden';
-            card.appendChild(iframe2);
-
-            iframe2.onload = function() {
-                card.removeChild(iframe1);
-                iframe2.style.visibility = 'visible';
-                refreshing = 0
-            }
-        }
-    </script>
+    // --- Shader Background Setup ---
+    const canvas = document.getElementById('animatedBG');
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    camera.position.z = 1;
+    
+    // Uniforms with three colour uniforms added
+    const uniforms = {
+      iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      iTime: { value: 0.0 },
+      colour1: { value: new THREE.Color(defaultColors.color1) },
+      colour2: { value: new THREE.Color(defaultColors.color2) },
+      colour3: { value: new THREE.Color(defaultColors.color3) }
+    };
+    
+    const fragmentShader = `
+      uniform vec2 iResolution;
+      uniform float iTime;
+      uniform vec3 colour1;
+      uniform vec3 colour2;
+      uniform vec3 colour3;
+    
+      #define SPIN_ROTATION -2.0
+      #define SPIN_SPEED 7.0
+      #define OFFSET vec2(0.0)
+      #define CONTRAST 3.5
+      #define LIGTHING 0.4
+      #define SPIN_AMOUNT 0.25
+      #define PIXEL_FILTER 745.0
+      #define SPIN_EASE 1.0
+      #define PI 3.14159265359
+      #define IS_ROTATE false
+    
+      vec4 effect(vec2 screenSize, vec2 screen_coords) {
+          float pixel_size = length(screenSize.xy) / PIXEL_FILTER;
+          vec2 uv = (floor(screen_coords.xy * (1.0 / pixel_size)) * pixel_size - 0.5 * screenSize.xy) / length(screenSize.xy) - OFFSET;
+          float uv_len = length(uv);
+          
+          float speed = (SPIN_ROTATION * SPIN_EASE * 0.2);
+          if (IS_ROTATE) {
+              speed = iTime * speed;
+          }
+          speed += 302.2;
+          float new_pixel_angle = atan(uv.y, uv.x) + speed - SPIN_EASE * 20.0 * (SPIN_AMOUNT * uv_len + (1.0 - SPIN_AMOUNT));
+          vec2 mid = (screenSize.xy / length(screenSize.xy)) / 2.0;
+          uv = vec2(uv_len * cos(new_pixel_angle) + mid.x, uv_len * sin(new_pixel_angle) + mid.y) - mid;
+          
+          uv *= 30.0;
+          speed = iTime * SPIN_SPEED;
+          vec2 uv2 = vec2(uv.x + uv.y);
+    
+          for (int i = 0; i < 5; i++) {
+              uv2 += sin(max(uv.x, uv.y)) + uv;
+              uv  += 0.5 * vec2(cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121), sin(uv2.x - 0.113 * speed));
+              uv  -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
+          }
+    
+          float contrast_mod = (0.25 * CONTRAST + 0.5 * SPIN_AMOUNT + 1.2);
+          float paint_res = min(2.0, max(0.0, length(uv) * 0.035 * contrast_mod));
+          float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));
+          float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));
+          float c3p = 1.0 - min(1.0, c1p + c2p);
+          float light = (LIGTHING - 0.2) * max(c1p * 5.0 - 4.0, 0.0) + LIGTHING * max(c2p * 5.0 - 4.0, 0.0);
+          return (0.3 / CONTRAST) * vec4(colour1, 1.0) +
+                 (1.0 - 0.3 / CONTRAST) * (vec4(colour1, 1.0) * c1p +
+                 vec4(colour2, 1.0) * c2p +
+                 vec4(c3p * colour3, 1.0)) +
+                 vec4(light, light, light, 0.0);
+      }
+    
+      void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+          vec2 uv = fragCoord / iResolution.xy;
+          fragColor = effect(iResolution.xy, uv * iResolution.xy);
+      }
+    
+      void main() {
+          mainImage(gl_FragColor, gl_FragCoord.xy);
+      }
+    `;
+    
+    const material = new THREE.ShaderMaterial({
+      fragmentShader: fragmentShader,
+      uniforms: uniforms
+    });
+    
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    
+    function animate() {
+      uniforms.iTime.value = performance.now() / 1000;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener("resize", () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
+    });
+    
+    // --- Card Refresh and Interactivity ---
+    let refreshing = 0;
+    function refresh(){
+      if (refreshing === 1) { return; }
+      refreshing = 1;
+    
+      var iframe1 = document.querySelector('#card-container > iframe');
+      var iframe2 = document.createElement('iframe');
+    
+      iframe1.style.opacity = 0.5;
+      
+      const option_cards = document.querySelector("#option-cards").checked+0;
+      const option_basic = document.querySelector("#option-basic").checked+0;
+      const option_jokers = document.querySelector("#option-jokers").checked+0;
+      const option_special = document.querySelector("#option-special").checked+0;
+    
+      iframe2.src = "https://kiwuthegamer.github.io/Balatro-Card-API/?cards=" + option_cards +
+                    "&basicOnly=" + (1 - option_basic) +
+                    "&jokers=" + option_jokers +
+                    "&specialCases=" + option_special;
+    
+      iframe2.style.visibility = 'hidden';
+      document.getElementById('card-container').appendChild(iframe2);
+    
+      iframe2.onload = function() {
+        document.getElementById('card-container').removeChild(iframe1);
+        iframe2.style.visibility = 'visible';
+        refreshing = 0;
+      }
+    }
+    
+    // Options interactivity
+    document.getElementById('option-cards').onchange = function() {
+      document.getElementById('option-basic').disabled = !this.checked;
+      document.getElementById('option-basic').checked = false;
+    };
+    
+    document.getElementById('option-jokers').onchange = function() {
+      document.getElementById('option-special').disabled = !this.checked;
+      document.getElementById('option-special').checked = false;
+    };
+    
+    document.getElementById('option-float').onchange = function() {
+      document.getElementById('option-pause').disabled = !this.checked;
+      document.getElementById('option-pause').checked = false;
+    };
+    
+    document.getElementById('option-bg').onchange = function() {
+      // Toggle the shader background visibility based on this option
+      canvas.style.display = this.checked ? 'block' : 'none';
+      
+      // Enable or disable colour pickers and their revert buttons
+      const disable = !this.checked;
+      document.getElementById('color-picker1').disabled = disable;
+      document.getElementById('color-picker2').disabled = disable;
+      document.getElementById('color-picker3').disabled = disable;
+      document.getElementById('revert1').disabled = disable;
+      document.getElementById('revert2').disabled = disable;
+      document.getElementById('revert3').disabled = disable;
+    };
+    
+    document.getElementById('option-scanlines').onchange = function() {
+      document.getElementById('option-scanlinespeed').disabled = !this.checked;
+    };
+    
+    // Event listeners for colour pickers to update shader uniforms live
+    document.getElementById('color-picker1').oninput = function() {
+      uniforms.colour1.value.set(this.value);
+    };
+    document.getElementById('color-picker2').oninput = function() {
+      uniforms.colour2.value.set(this.value);
+    };
+    document.getElementById('color-picker3').oninput = function() {
+      uniforms.colour3.value.set(this.value);
+    };
+    
+    // Revert buttons for each colour picker
+    document.getElementById('revert1').onclick = function() {
+      document.getElementById('color-picker1').value = defaultColors.color1;
+      uniforms.colour1.value.set(defaultColors.color1);
+    };
+    document.getElementById('revert2').onclick = function() {
+      document.getElementById('color-picker2').value = defaultColors.color2;
+      uniforms.colour2.value.set(defaultColors.color2);
+    };
+    document.getElementById('revert3').onclick = function() {
+      document.getElementById('color-picker3').value = defaultColors.color3;
+      uniforms.colour3.value.set(defaultColors.color3);
+    };
+    
+    // 3D rotation for card container using the slider value for perspective
+    const card = document.querySelector("#card-container");
+    
+    card.addEventListener("mousemove", (e) => {
+      if (!document.getElementById('option-rotate').checked) { return; }
+      const perspective = parseFloat(document.getElementById('option-perspective').value);
+      const x = (innerWidth / 2 - e.pageX) / -perspective;
+      const y = (innerHeight / 2 - e.pageY) / perspective;
+      card.style.transform = `rotateY(${x}deg) rotateX(${y}deg) translate(-50%, -50%)`;
+    });
+    
+    card.addEventListener("mouseenter", () => {
+      card.style.transition = "transform 0.2s linear, scale 0.2s linear";
+      setTimeout(() => { card.style.transition = "scale 0.2s linear" }, 200);
+    });
+    
+    card.addEventListener("mouseleave", () => {
+      card.style.transition = "transform 0.2s linear, scale 0.2s linear";
+      card.style.transform = "rotateY(0deg) rotateX(0deg) translate(-50%, -50%)";
+      setTimeout(() => { card.style.transition = "scale 0.2s linear" }, 200);
+    });
+  </script>
 </body>
 </html>
