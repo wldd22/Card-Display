@@ -75,6 +75,11 @@
       animation-direction: alternate;
     }
     
+    /* Hide the card when all filters are disabled */
+    body:has(#option-cards:not(:checked)):has(#option-jokers:not(:checked)) > #card-container {
+      display: none;
+    }
+
     #card-container:hover {
       transform: translate(-50%, -50%) scale(1.1);
     }
@@ -207,7 +212,7 @@
     </div>
     <div> 
       <input type="checkbox" id="option-basic" onclick="refresh()">
-      <label for="option-basic">Modified playing cards</label> 
+      <label for="option-basic">Enchanced playing cards</label> 
     </div>
     <div> 
       <input type="checkbox" id="option-jokers" onclick="refresh()">
